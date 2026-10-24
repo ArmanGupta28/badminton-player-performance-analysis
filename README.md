@@ -183,7 +183,7 @@ Depending on the implemented features, the dashboard can include:
 
 ### Live Dashboard
 
-**Streamlit App:** [Add your deployed Streamlit URL here]
+**Streamlit App:** https://bdmintn-player-performance-analysis-tyrqzhnfyeyhtckdz8tutp.streamlit.app/
 
 ## ⚙️ Installation and Setup
 
@@ -196,7 +196,7 @@ Depending on the implemented features, the dashboard can include:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/badminton-player-performance-analysis.git
+git clone https://github.com/ArmanGupta28/badminton-player-performance-analysis.git
 ```
 
 Replace `YOUR-USERNAME` with your GitHub username.
