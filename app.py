@@ -779,65 +779,77 @@ with machine_learning:
                     list(models.keys())
                 )
 
-                if st.button("Train and evaluate classifier"):
+                
+                if st.button("Train and evaluate classifier", key="train_classifier"):
                     model = models[chosen]
-                    model.fit(X_train, y_train)
-                    predictions = model.predict(X_test)
 
-                    metrics = {
-                        "Accuracy": accuracy_score(y_test, predictions),
-                        "Precision": precision_score(
-                            y_test, predictions, zero_division=0
-                        ),
-                        "Recall": recall_score(
-                            y_test, predictions, zero_division=0
-                        ),
-                        "F1-score": f1_score(
-                            y_test, predictions, zero_division=0
+                    try:
+                        with st.spinner(f"Training {chosen}... Please wait."):
+                            model.fit(X_train, y_train)
+                            predictions = model.predict(X_test)
+
+                        st.success(f"{chosen} trained successfully!")
+
+                        metrics = {
+                            "Accuracy": accuracy_score(y_test, predictions),
+                            "Precision": precision_score(
+                                y_test, predictions, zero_division=0
+                            ),
+                            "Recall": recall_score(
+                                y_test, predictions, zero_division=0
+                            ),
+                            "F1-score": f1_score(
+                                y_test, predictions, zero_division=0
+                            )
+                        }
+
+                        cols = st.columns(4)
+                        for col, (name, value) in zip(cols, metrics.items()):
+                            col.metric(name, f"{value:.3f}")
+
+                        st.subheader("Classification Report")
+                        report = classification_report(
+                            y_test,
+                            predictions,
+                            labels=[0, 1],
+                            target_names=["Team 2 wins", "Team 1 wins"],
+                            output_dict=True,
+                            zero_division=0
                         )
-                    }
+                        st.dataframe(
+                            pd.DataFrame(report).T,
+                            use_container_width=True
+                        )
 
-                    cols = st.columns(4)
-                    for col, (name, value) in zip(
-                        cols, metrics.items()
-                    ):
-                        col.metric(name, f"{value:.3f}")
+                        st.subheader("Confusion Matrix")
+                        cm = confusion_matrix(
+                            y_test, predictions, labels=[0, 1]
+                        )
 
-                    st.subheader("Classification Report")
-                    report = classification_report(
-                        y_test,
-                        predictions,
-                        labels=[0, 1],
-                        target_names=["Team 2 wins", "Team 1 wins"],
-                        output_dict=True,
-                        zero_division=0
-                    )
-                    st.dataframe(
-                        pd.DataFrame(report).T,
-                        use_container_width=True
-                    )
+                        fig, ax = plt.subplots()
+                        sns.heatmap(
+                            cm,
+                            annot=True,
+                            fmt="d",
+                            cmap="Blues",
+                            xticklabels=[
+                                "Predicted Team 2",
+                                "Predicted Team 1"
+                            ],
+                            yticklabels=[
+                                "Actual Team 2",
+                                "Actual Team 1"
+                            ],
+                            ax=ax
+                        )
+                        ax.set_xlabel("Prediction")
+                        ax.set_ylabel("Actual result")
+                        st.pyplot(fig)
+                        plt.close(fig)
 
-                    st.subheader("Confusion Matrix")
-                    cm = confusion_matrix(
-                        y_test, predictions, labels=[0, 1]
-                    )
-                    fig, ax = plt.subplots()
-                    sns.heatmap(
-                        cm, annot=True, fmt="d", cmap="Blues",
-                        xticklabels=["Predicted Team 2", "Predicted Team 1"],
-                        yticklabels=["Actual Team 2", "Actual Team 1"],
-                        ax=ax
-                    )
-                    ax.set_xlabel("Prediction")
-                    ax.set_ylabel("Actual result")
-                    st.pyplot(fig)
-                    plt.close(fig)
+                    except Exception as e:
+                        st.error(f"{chosen} failed to train: {e}")
 
-                    st.caption(
-                        "Chronological holdout evaluation. Matches on "
-                        "the same date may cross the split, so this is "
-                        "not a fully leakage-proof evaluation."
-                    )
             else:
                 st.info(
                     "The chronological split does not contain both "
