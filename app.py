@@ -826,26 +826,26 @@ with machine_learning:
                             y_test, predictions, labels=[0, 1]
                         )
 
-                        fig, ax = plt.subplots()
-                        sns.heatmap(
-                            cm,
-                            annot=True,
-                            fmt="d",
-                            cmap="Blues",
-                            xticklabels=[
-                                "Predicted Team 2",
-                                "Predicted Team 1"
-                            ],
-                            yticklabels=[
-                                "Actual Team 2",
-                                "Actual Team 1"
-                            ],
-                            ax=ax
-                        )
-                        ax.set_xlabel("Prediction")
-                        ax.set_ylabel("Actual result")
-                        st.pyplot(fig)
-                        plt.close(fig)
+                        fig, ax = plt.subplots(figsize=(5, 3.5))
+
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt="d",
+    cmap="Blues",
+    annot_kws={"size": 10},
+    xticklabels=["Predicted Team 2", "Predicted Team 1"],
+    yticklabels=["Actual Team 2", "Actual Team 1"],
+    ax=ax
+)
+
+ax.set_xlabel("Prediction", fontsize=10)
+ax.set_ylabel("Actual result", fontsize=10)
+ax.tick_params(axis="both", labelsize=9)
+
+plt.tight_layout()
+st.pyplot(fig, use_container_width=False)
+plt.close(fig)
 
                     except Exception as e:
                         st.error(f"{chosen} failed to train: {e}")
