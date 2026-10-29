@@ -774,12 +774,77 @@ with machine_learning:
                     )
                 }
 
-                chosen = st.selectbox(
-                    "Select classification model",
-                    list(models.keys())
+                st.subheader("Model Comparison")
+                st.write(
+                    "Train all four classifiers on the same chronological "
+                    "train/test split and compare their evaluation metrics."
                 )
 
-                
+                if st.button("Compare All Models", key="compare_all_models"):
+                    comparison_rows = []
+                    progress = st.progress(0)
+                    status = st.empty()
+
+                    for i, (model_name, model_instance) in enumerate(models.items()):
+                        try:
+                            status.write(f"Training {model_name}...")
+                            model_instance.fit(X_train, y_train)
+                            model_predictions = model_instance.predict(X_test)
+
+                            comparison_rows.append({
+                                "Model": model_name,
+                                "Accuracy": accuracy_score(y_test, model_predictions),
+                                "Precision": precision_score(
+                                    y_test, model_predictions, zero_division=0
+                                ),
+                                "Recall": recall_score(
+                                    y_test, model_predictions, zero_division=0
+                                ),
+                                "F1-score": f1_score(
+                                    y_test, model_predictions, zero_division=0
+                                )
+                            })
+                        except Exception as e:
+                            st.warning(f"{model_name} failed: {e}")
+
+                        progress.progress((i + 1) / len(models))
+
+                    status.empty()
+                    progress.empty()
+
+                    if comparison_rows:
+                        comparison_df = pd.DataFrame(comparison_rows).set_index("Model")
+                        st.dataframe(
+                            comparison_df.style.format("{:.3f}"),
+                            use_container_width=True
+                        )
+
+                        metric_to_plot = st.selectbox(
+                            "Metric to compare",
+                            ["Accuracy", "Precision", "Recall", "F1-score"],
+                            index=3,
+                            key="comparison_metric"
+                        )
+                        st.bar_chart(comparison_df[metric_to_plot])
+
+                        best_model = comparison_df["F1-score"].idxmax()
+                        st.success(
+                            f"Highest F1-score on this test set: {best_model} "
+                            f"({comparison_df.loc[best_model, 'F1-score']:.3f})"
+                        )
+                        st.caption(
+                            "This identifies the top result on this test split only; "
+                            "it does not guarantee better performance on new data."
+                        )
+
+                st.divider()
+                st.subheader("Train One Model in Detail")
+                chosen = st.selectbox(
+                    "Select classification model",
+                    list(models.keys()),
+                    key="single_classification_model"
+                )
+
                 if st.button("Train and evaluate classifier", key="train_classifier"):
                     model = models[chosen]
 
